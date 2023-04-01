@@ -1,20 +1,20 @@
-#!/bin/sh
+#!/bin/zsh
+# Flip the screen and the touchscreen from lanscape to portrait then back
+# Using sway wm 
 
 output_name="eDP-1"
-input_name="'Wacom HID 52A2 Finger'"
+input_name="Wacom HID 52A2 Finger"
 
-current_rotation=$(swaymsg -t get_outputs | grep "$output_name" -A100 | grep "transform" | awk '{print $2}')
+current_rotation=$(swaymsg -t get_outputs | grep "$output_name" -A100 | grep "transform" | awk '{print $2}'| tr -d ',')
 
 echo "Output:" $output_name
 echo "Input:" $input_name
 echo "Current:" $current_rotation
 
-if [ "$current_rotation" = "normal" ]; then
+if [[ "$current_rotation" = *normal* ]]; then
+    swaymsg input "\"$input_name\"" map_to_output "$output_name"
     swaymsg output "$output_name" transform 90
-    swaymsg input "$input_name" map_to_output "$output_name"
-    swaymsg input "$input_name" calibration_matrix "0 -1 1 1 0 0"
 else
+    swaymsg input "\"$input_name\"" map_to_output "$output_name"
     swaymsg output "$output_name" transform normal
-    swaymsg input "$input_name" map_to_output "$output_name"
-    swaymsg input "$input_name" calibration_matrix "1 0 0 0 1 0"
 fi
