@@ -1,15 +1,20 @@
-#!/bin/zsh
+#!/bin/sh
 
 output_name="eDP-1"
-touchscreen_name="Wacom HID 52A2 Finger"
+input_name="'Wacom HID 52A2 Finger'"
 
-state=$(xrandr --query --verbose | grep -w "$output_name" | grep -oP '\d+x\d+\+\d+\+\d+\s+\K(normal|left)')
+current_rotation=$(swaymsg -t get_outputs | grep "$output_name" -A100 | grep "transform" | awk '{print $2}')
 
-if [[ $state == "normal" ]]
-then
-    xrandr --output "$output_name" --rotate left
-    sudo libinput debug-events --device /dev/input/event"$touchscreen_id" --enable-tap
+echo "Output:" $output_name
+echo "Input:" $input_name
+echo "Current:" $current_rotation
+
+if [ "$current_rotation" = "normal" ]; then
+    swaymsg output "$output_name" transform 90
+    swaymsg input "$input_name" map_to_output "$output_name"
+    swaymsg input "$input_name" calibration_matrix "0 -1 1 1 0 0"
 else
-    xrandr --output "$output_name" --rotate normal
-    sudo libinput debug-events --device /dev/input/event"$touchscreen_id" --enable-tap
+    swaymsg output "$output_name" transform normal
+    swaymsg input "$input_name" map_to_output "$output_name"
+    swaymsg input "$input_name" calibration_matrix "1 0 0 0 1 0"
 fi
